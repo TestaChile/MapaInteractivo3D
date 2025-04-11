@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <style>
-    /* Añade esto en tu <head> */
-    .leaflet-layer {
-        filter: grayscale(100%) contrast(150%) invert(100%) !important;
-    }
-</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Chile - Blanco y Negro</title>
+    <title>Mapa de Chile - Blanco y Negro con Relieve</title>
     <!-- Leaflet (biblioteca para mapas interactivos) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -35,48 +29,83 @@
             font-size: 16px;
             font-weight: bold;
         }
+        /* Estilo para marcadores personalizados */
+        .custom-marker {
+            background-color: #ff0000;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
     </style>
 </head>
 <body>
     <div class="title">Mapa de Chile - Estudio de Paisaje</div>
     <div id="map"></div>
 
-   <script>
-    // 1. Inicializar mapa
-    var map = L.map('map').setView([-35.6751, -71.5430], 5);
+    <script>
+        // 1. Inicializar mapa centrado en Chile
+        var map = L.map('map').setView([-35.6751, -71.5430], 5);
 
-    // 2. Capa base en blanco/negro CON AGUA NEGRA (servidor alternativo)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Fuente: Esri',
-        maxZoom: 16
-    }).addTo(map);
+        // 2. Capa base con relieve (topografía)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Relieve: Esri',
+            maxZoom: 16,
+            opacity: 0.7
+        }).addTo(map);
 
-    // 3. Aplicar filtros CSS para convertir a blanco/negro y oscurecer agua
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .leaflet-tile-container img {
-            filter: grayscale(100%) contrast(120%) brightness(0.8) !important;
-        }
-    `;
-    document.head.appendChild(style);
+        // 3. Capa de agua oscura
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19,
+            pane: 'waterPane'
+        }).addTo(map);
 
-    // 4. Tus marcadores y polígonos (se mantienen igual)
-    L.marker([-33.4489, -70.6693]).addTo(map)
+        // 4. Crear un pane especial para el agua (para asegurar que quede debajo del relieve)
+        map.createPane('waterPane');
+        map.getPane('waterPane').style.zIndex = 200;
+
+        // 5. Aplicar filtros CSS para lograr el efecto blanco y negro
+        const style = document.createElement('style');
+        style.innerHTML = `
+            /* Capa de relieve - blanco/gris */
+            .leaflet-tile-pane img {
+                filter: grayscale(100%) contrast(120%) brightness(1.2) !important;
+            }
+            /* Capa de agua - negro */
+            .leaflet-waterPane img {
+                filter: brightness(0.3) contrast(150%) !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 6. Marcadores personalizados (sin polígono)
+        // Santiago
+        L.marker([-33.4489, -70.6693], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                iconSize: [16, 16]
+            })
+        }).addTo(map)
         .bindPopup("<b>Santiago</b><br>Capital de Chile");
 
-    L.marker([-33.0472, -71.6127]).addTo(map)
-        .bindPopup("<b>Valparaíso</b><br>Región central");
+        // Pichilemu
+        L.marker([-34.3872, -72.0048], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                iconSize: [16, 16]
+            })
+        }).addTo(map)
+        .bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
 
-    var valpoPolygon = L.polygon([
-        [-32.5, -71.8],
-        [-32.5, -70.5],
-        [-33.8, -70.5],
-        [-33.8, -71.8]
-    ], {
-        color: '#ff0000',
-        fillOpacity: 0.1,
-        weight: 2
-    }).addTo(map).bindPopup("Región de Valparaíso");
-</script>
+        // Algarrobo
+        L.marker([-33.3667, -71.6667], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                iconSize: [16, 16]
+            })
+        }).addTo(map)
+        .bindPopup("<b>Algarrobo</b><br>Comuna costera");
+    </script>
 </body>
 </html>
