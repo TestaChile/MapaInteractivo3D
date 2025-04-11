@@ -41,35 +41,42 @@
     <div class="title">Mapa de Chile - Estudio de Paisaje</div>
     <div id="map"></div>
 
-    <script>
-        // Inicializar mapa centrado en Chile
-        var map = L.map('map').setView([-35.6751, -71.5430], 5);
+   <script>
+    // 1. Inicializar mapa
+    var map = L.map('map').setView([-35.6751, -71.5430], 5);
 
-        // Capa base en blanco y negro (OpenStreetMap)
-        L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
+    // 2. Capa base en blanco/negro CON AGUA NEGRA (servidor alternativo)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Fuente: Esri',
+        maxZoom: 16
+    }).addTo(map);
 
-        // Añadir marcadores de ejemplo
-        L.marker([-33.4489, -70.6693]).addTo(map)
-            .bindPopup("<b>Santiago</b><br>Capital de Chile");
+    // 3. Aplicar filtros CSS para convertir a blanco/negro y oscurecer agua
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .leaflet-tile-container img {
+            filter: grayscale(100%) contrast(120%) brightness(0.8) !important;
+        }
+    `;
+    document.head.appendChild(style);
 
-        L.marker([-33.0472, -71.6127]).addTo(map)
-            .bindPopup("<b>Valparaíso</b><br>Región central");
+    // 4. Tus marcadores y polígonos (se mantienen igual)
+    L.marker([-33.4489, -70.6693]).addTo(map)
+        .bindPopup("<b>Santiago</b><br>Capital de Chile");
 
-        // Añadir un polígono de ejemplo (Región de Valparaíso)
-        var valpoPolygon = L.polygon([
-            [-32.5, -71.8],
-            [-32.5, -70.5],
-            [-33.8, -70.5],
-            [-33.8, -71.8]
-        ], {
-            color: '#ff0000', // Rojo
-            fillOpacity: 0.1,
-            weight: 2
-        }).addTo(map)
-          .bindPopup("Región de Valparaíso");
-    </script>
+    L.marker([-33.0472, -71.6127]).addTo(map)
+        .bindPopup("<b>Valparaíso</b><br>Región central");
+
+    var valpoPolygon = L.polygon([
+        [-32.5, -71.8],
+        [-32.5, -70.5],
+        [-33.8, -70.5],
+        [-33.8, -71.8]
+    ], {
+        color: '#ff0000',
+        fillOpacity: 0.1,
+        weight: 2
+    }).addTo(map).bindPopup("Región de Valparaíso");
+</script>
 </body>
 </html>
