@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Chile - Blanco y Negro con Relieve</title>
+    <title>Mapa de Chile - Suelo Blanco/Agua Negra</title>
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,7 +12,6 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         #map {
             width: 100%;
@@ -28,78 +27,63 @@
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
-        /* Estilo para los marcadores */
-        .custom-marker {
-            background: #e74c3c;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
+        .leaflet-marker-icon {
+            background-color: #e74c3c;
             border: 2px solid white;
-            position: relative;
+            border-radius: 50%;
+            width: 12px !important;
+            height: 12px !important;
+            margin-left: -6px !important;
+            margin-top: -6px !important;
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
-        /* Filtros para el mapa */
-        .leaflet-layer:first-child img {
-            filter: grayscale(100%) contrast(120%) brightness(1.1) !important;
+        .water-layer {
+            filter: brightness(0) contrast(200%) !important;
         }
-        .leaflet-layer:nth-child(2) img {
-            filter: brightness(0.2) contrast(200%) !important;
+        .land-layer {
+            filter: grayscale(1) brightness(1.5) contrast(110%) !important;
         }
     </style>
 </head>
 <body>
-    <div class="title">Mapa de Chile - Estudio de Paisaje</div>
+    <div class="title">Mapa de Chile - Suelo Blanco/Agua Negra</div>
     <div id="map"></div>
 
     <script>
         // 1. Inicializar mapa
-        var map = L.map('map').setView([-35.6751, -71.5430], 5.5);
+        var map = L.map('map').setView([-35.6751, -71.5430], 6);
         
-        // 2. Capa de agua oscura (primera capa)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        // 2. Capa de agua (negro puro)
+        var waterLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
-            maxZoom: 19,
-            subdomains: 'abcd'
+            className: 'water-layer',
+            pane: 'waterPane'
         }).addTo(map);
         
-        // 3. Capa de relieve (segunda capa)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+        // 3. Capa de relieve (suelo blanco)
+        var reliefLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Relieve: Esri',
-            maxZoom: 16,
-            opacity: 0.7
+            className: 'land-layer',
+            opacity: 0.9
         }).addTo(map);
         
-        // 4. Función para crear marcadores personalizados
-        function createCustomMarker(color) {
-            return L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background-color:${color};width:100%;height:100%;border-radius:50%;border:2px solid white"></div>`,
-                iconSize: [20, 20]
-            });
-        }
+        // 4. Crear pane especial para el agua
+        map.createPane('waterPane');
+        map.getPane('waterPane').style.zIndex = 200;
         
         // 5. Añadir marcadores
-        // Santiago
-        L.marker([-33.4489, -70.6693], {
-            icon: createCustomMarker('#e74c3c')
-        }).addTo(map).bindPopup("<b>Santiago</b><br>Capital de Chile");
+        // Santiago (rojo)
+        L.marker([-33.4489, -70.6693]).addTo(map)
+            .bindPopup("<b>Santiago</b><br>Capital de Chile");
         
-        // Pichilemu
-        L.marker([-34.3872, -72.0048], {
-            icon: createCustomMarker('#3498db')
-        }).addTo(map).bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
+        // Pichilemu (azul)
+        L.marker([-34.3872, -72.0048]).addTo(map)
+            .bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
         
-        // Algarrobo
-        L.marker([-33.3667, -71.6667], {
-            icon: createCustomMarker('#2ecc71')
-        }).addTo(map).bindPopup("<b>Algarrobo</b><br>Comuna costera");
-        
-        // 6. Ajustar el zoom para asegurar que los marcadores sean visibles
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
+        // Algarrobo (verde)
+        L.marker([-33.3667, -71.6667]).addTo(map)
+            .bindPopup("<b>Algarrobo</b><br>Comuna costera");
     </script>
 </body>
 </html>
