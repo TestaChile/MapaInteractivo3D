@@ -40,10 +40,10 @@
         var map = L.map('map').setView([-35.6751, -71.5430], 5);
 
         // Capa base en blanco y negro (OpenStreetMap)
-        L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+}).addTo(map);
 
         // Añadir marcadores de ejemplo
         L.marker([-33.4489, -70.6693]).addTo(map)
