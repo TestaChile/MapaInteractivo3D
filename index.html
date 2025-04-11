@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Chile - Blanco y Negro con Relieve</title>
-    <!-- Leaflet (biblioteca para mapas interactivos) -->
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Estilos personalizados -->
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         #map {
             width: 100%;
-            height: 100vh; /* 100% del alto de la pantalla */
+            height: 100vh;
         }
         .title {
             position: absolute;
@@ -24,18 +24,28 @@
             left: 10px;
             z-index: 1000;
             background: rgba(255, 255, 255, 0.9);
-            padding: 8px 12px;
+            padding: 8px 15px;
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
-        /* Estilo para marcadores personalizados */
+        /* Estilo para los marcadores */
         .custom-marker {
-            background-color: #ff0000;
-            width: 12px;
-            height: 12px;
+            background: #e74c3c;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             border: 2px solid white;
+            position: relative;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        /* Filtros para el mapa */
+        .leaflet-layer:first-child img {
+            filter: grayscale(100%) contrast(120%) brightness(1.1) !important;
+        }
+        .leaflet-layer:nth-child(2) img {
+            filter: brightness(0.2) contrast(200%) !important;
         }
     </style>
 </head>
@@ -44,68 +54,52 @@
     <div id="map"></div>
 
     <script>
-        // 1. Inicializar mapa centrado en Chile
-        var map = L.map('map').setView([-35.6751, -71.5430], 5);
-
-        // 2. Capa base con relieve (topografía)
+        // 1. Inicializar mapa
+        var map = L.map('map').setView([-35.6751, -71.5430], 5.5);
+        
+        // 2. Capa de agua oscura (primera capa)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
+        
+        // 3. Capa de relieve (segunda capa)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Relieve: Esri',
             maxZoom: 16,
             opacity: 0.7
         }).addTo(map);
-
-        // 3. Capa de agua oscura
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            maxZoom: 19,
-            pane: 'waterPane'
-        }).addTo(map);
-
-        // 4. Crear un pane especial para el agua (para asegurar que quede debajo del relieve)
-        map.createPane('waterPane');
-        map.getPane('waterPane').style.zIndex = 200;
-
-        // 5. Aplicar filtros CSS para lograr el efecto blanco y negro
-        const style = document.createElement('style');
-        style.innerHTML = `
-            /* Capa de relieve - blanco/gris */
-            .leaflet-tile-pane img {
-                filter: grayscale(100%) contrast(120%) brightness(1.2) !important;
-            }
-            /* Capa de agua - negro */
-            .leaflet-waterPane img {
-                filter: brightness(0.3) contrast(150%) !important;
-            }
-        `;
-        document.head.appendChild(style);
-
-        // 6. Marcadores personalizados (sin polígono)
+        
+        // 4. Función para crear marcadores personalizados
+        function createCustomMarker(color) {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background-color:${color};width:100%;height:100%;border-radius:50%;border:2px solid white"></div>`,
+                iconSize: [20, 20]
+            });
+        }
+        
+        // 5. Añadir marcadores
         // Santiago
         L.marker([-33.4489, -70.6693], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                iconSize: [16, 16]
-            })
-        }).addTo(map)
-        .bindPopup("<b>Santiago</b><br>Capital de Chile");
-
+            icon: createCustomMarker('#e74c3c')
+        }).addTo(map).bindPopup("<b>Santiago</b><br>Capital de Chile");
+        
         // Pichilemu
         L.marker([-34.3872, -72.0048], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                iconSize: [16, 16]
-            })
-        }).addTo(map)
-        .bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
-
+            icon: createCustomMarker('#3498db')
+        }).addTo(map).bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
+        
         // Algarrobo
         L.marker([-33.3667, -71.6667], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                iconSize: [16, 16]
-            })
-        }).addTo(map)
-        .bindPopup("<b>Algarrobo</b><br>Comuna costera");
+            icon: createCustomMarker('#2ecc71')
+        }).addTo(map).bindPopup("<b>Algarrobo</b><br>Comuna costera");
+        
+        // 6. Ajustar el zoom para asegurar que los marcadores sean visibles
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
     </script>
 </body>
 </html>
