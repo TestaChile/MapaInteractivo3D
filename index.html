@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <style>
+    /* Añade esto en tu <head> */
+    .leaflet-layer {
+        filter: grayscale(100%) contrast(150%) invert(100%) !important;
+    }
+</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Chile - Suelo Blanco/Agua Negra</title>
-    <!-- Leaflet -->
+    <title>Mapa de Chile - Blanco y Negro</title>
+    <!-- Leaflet (biblioteca para mapas interactivos) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Estilos personalizados -->
     <style>
         body {
             margin: 0;
@@ -15,7 +22,7 @@
         }
         #map {
             width: 100%;
-            height: 100vh;
+            height: 100vh; /* 100% del alto de la pantalla */
         }
         .title {
             position: absolute;
@@ -23,67 +30,53 @@
             left: 10px;
             z-index: 1000;
             background: rgba(255, 255, 255, 0.9);
-            padding: 8px 15px;
+            padding: 8px 12px;
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
         }
-        .leaflet-marker-icon {
-            background-color: #e74c3c;
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 12px !important;
-            height: 12px !important;
-            margin-left: -6px !important;
-            margin-top: -6px !important;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        .water-layer {
-            filter: brightness(0) contrast(200%) !important;
-        }
-        .land-layer {
-            filter: grayscale(1) brightness(1.5) contrast(110%) !important;
-        }
     </style>
 </head>
 <body>
-    <div class="title">Mapa de Chile - Suelo Blanco/Agua Negra</div>
+    <div class="title">Mapa de Chile - Estudio de Paisaje</div>
     <div id="map"></div>
 
-    <script>
-        // 1. Inicializar mapa
-        var map = L.map('map').setView([-35.6751, -71.5430], 6);
-        
-        // 2. Capa de agua (negro puro)
-        var waterLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            className: 'water-layer',
-            pane: 'waterPane'
-        }).addTo(map);
-        
-        // 3. Capa de relieve (suelo blanco)
-        var reliefLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Relieve: Esri',
-            className: 'land-layer',
-            opacity: 0.9
-        }).addTo(map);
-        
-        // 4. Crear pane especial para el agua
-        map.createPane('waterPane');
-        map.getPane('waterPane').style.zIndex = 200;
-        
-        // 5. Añadir marcadores
-        // Santiago (rojo)
-        L.marker([-33.4489, -70.6693]).addTo(map)
-            .bindPopup("<b>Santiago</b><br>Capital de Chile");
-        
-        // Pichilemu (azul)
-        L.marker([-34.3872, -72.0048]).addTo(map)
-            .bindPopup("<b>Pichilemu</b><br>Destino turístico costero");
-        
-        // Algarrobo (verde)
-        L.marker([-33.3667, -71.6667]).addTo(map)
-            .bindPopup("<b>Algarrobo</b><br>Comuna costera");
-    </script>
+   <script>
+    // 1. Inicializar mapa
+    var map = L.map('map').setView([-35.6751, -71.5430], 5);
+
+    // 2. Capa base en blanco/negro CON AGUA NEGRA (servidor alternativo)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Fuente: Esri',
+        maxZoom: 16
+    }).addTo(map);
+
+    // 3. Aplicar filtros CSS para convertir a blanco/negro y oscurecer agua
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .leaflet-tile-container img {
+            filter: grayscale(100%) contrast(120%) brightness(0.8) !important;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 4. Tus marcadores y polígonos (se mantienen igual)
+    L.marker([-33.4489, -70.6693]).addTo(map)
+        .bindPopup("<b>Santiago</b><br>Capital de Chile");
+
+    L.marker([-33.0472, -71.6127]).addTo(map)
+        .bindPopup("<b>Valparaíso</b><br>Región central");
+
+    var valpoPolygon = L.polygon([
+        [-32.5, -71.8],
+        [-32.5, -70.5],
+        [-33.8, -70.5],
+        [-33.8, -71.8]
+    ], {
+        color: '#ff0000',
+        fillOpacity: 0.1,
+        weight: 2
+    }).addTo(map).bindPopup("Región de Valparaíso");
+</script>
 </body>
 </html>
